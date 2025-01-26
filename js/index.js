@@ -45,7 +45,17 @@ function validateAddress(address) {
         cArray[i] = address.charCodeAt(i);
     }
 
-    return validateAddressHandle(8192, address.length);
+    const result = validateAddressHandle(8192, address.length);
+    if(result === 0) {
+        return { valid: false };
+    }
+
+    if(result === 1 && address.length == 42) {
+        return { valid: true, address };
+    } else {
+        const array = new Uint32Array(memoryBuffer, 8192, 42);
+        return { valid: true, address: String.fromCodePoint.apply(null, array) };
+    }
 }
 
 module.exports = { 

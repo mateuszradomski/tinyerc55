@@ -51,14 +51,20 @@ pub fn Keccak(comptime f: u11, comptime output_bits: u11, comptime default_delim
 
 pub const Keccak256 = Keccak(1600, 256, 0x01, 24);
 
-pub fn validateChecksum(address: []const u32) bool {
+const ValidationResult = enum(u2) {
+    Invalid,
+    Valid,
+    Computed,
+};
+
+pub fn validateChecksum(address: []u32) ValidationResult {
     var hexPartSlice = address;
     if (address.len == 42 and address[0] == '0' and address[1] == 'x') {
         hexPartSlice = address[2..];
     }
 
     if (hexPartSlice.len != 40) {
-        return false;
+        return .Invalid;
     }
 
     const hexPart32: [40]u32 = @as(*[40]u32, @ptrCast(@constCast(hexPartSlice.ptr))).*;
@@ -71,7 +77,7 @@ pub fn validateChecksum(address: []const u32) bool {
     }
 
     if (hasUnicode) {
-        return false;
+        return .Invalid;
     }
 
     var upperCase: [40]u8 = undefined;
@@ -86,14 +92,11 @@ pub fn validateChecksum(address: []const u32) bool {
     }
 
     if (!isHex) {
-        return false;
+        return .Invalid;
     }
 
     const isAllLowercase = std.mem.eql(u8, &hexPart, &output);
     const isAllUppercase = std.mem.eql(u8, &hexPart, &upperCase);
-    if (isAllLowercase or isAllUppercase) {
-        return true;
-    }
 
     var hashed: [32]u8 = undefined;
     Keccak256.hash(&output, &hashed, .{});
@@ -108,18 +111,33 @@ pub fn validateChecksum(address: []const u32) bool {
         output[i + 1] = LUT2[(hashed[j] & 0x0f) / 8];
     }
 
-    return std.mem.eql(u8, &hexPart, &output);
+    const writeOut: []u32 = @as([*]u32, address.ptr)[0..@as(usize, @intCast(42))];
+    writeOut[0] = '0';
+    writeOut[1] = 'x';
+    inline for (output, 2..) |v, i| {
+        writeOut[i] = v;
+    }
+
+    if (isAllLowercase or isAllUppercase) {
+        return .Computed;
+    }
+
+    if (std.mem.eql(u8, &hexPart, &output)) {
+        return .Valid;
+    } else {
+        return .Invalid;
+    }
 }
 
-pub export fn validateAddress(string: [*c]const u32, len: c_int) bool {
-    const slice: []const u32 = @as([*]const u32, string)[0..@as(usize, @intCast(len))];
+pub export fn validateAddress(string: [*c]u32, len: c_int) c_int {
+    const slice: []u32 = @as([*]u32, string)[0..@as(usize, @intCast(len))];
 
-    return validateChecksum(slice);
+    return @intFromEnum(validateChecksum(slice));
 }
 
 fn validateChecksumTest(address: []const u8) !bool {
     const codepointCount = try std.unicode.utf8CountCodepoints(address);
-    const codepoints: []u32 = try testing.allocator.alloc(u32, codepointCount);
+    const codepoints: []u32 = try testing.allocator.alloc(u32, @max(42, codepointCount));
     defer testing.allocator.free(codepoints);
 
     var iter = std.unicode.Utf8Iterator{ .bytes = address, .i = 0 };
@@ -134,7 +152,8 @@ fn validateChecksumTest(address: []const u8) !bool {
         i += 1;
     }
 
-    return validateChecksum(codepoints);
+    const result = validateChecksum(codepoints[0..codepointCount]);
+    return result == .Valid or result == .Computed;
 }
 
 const testing = std.testing;
