@@ -36,7 +36,7 @@ function validateAddress(address) {
     if(typeof address !== 'string') {
         return false
     }
-    if(address.length !== 40 || address.length !== 42) {
+    if(address.length !== 40 && address.length !== 42) {
         return false;
     }
 
