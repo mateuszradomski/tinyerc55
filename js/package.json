@@ -1,0 +1,14 @@
+{
+	"name": "@mradomski/tinyerc55",
+	"description": "Small & Fast Ethereum addresses checksum (ERC-55) validator",
+	"version": "0.1.0",
+	"homepage": "https://github.com/mateuszradomski/tinyerc55",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/mateuszradomski/tinyerc55.git"
+	},
+	"license": "MIT",
+	"main": "index.js",
+	"types": "index.d.ts",
+	"scripts": {}
+}
