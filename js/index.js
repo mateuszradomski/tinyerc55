@@ -34,10 +34,10 @@ function validateAddress(address) {
     }
 
     if(typeof address !== 'string') {
-        return false
+        return { valid: false };
     }
     if(address.length !== 40 && address.length !== 42) {
-        return false;
+        return { valid: false };
     }
 
     const cArray = new Uint32Array(memoryBuffer, 8192, address.length);
