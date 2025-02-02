@@ -4,6 +4,7 @@ let loaded = false;
 let instance = null;
 let memoryBuffer = null;
 let validateAddressHandle = null;
+const decoder = new TextDecoder()
 
 function decodeBase64(base64) {
   if (typeof Buffer !== 'undefined') {
@@ -53,8 +54,8 @@ function validateAddress(address) {
     if(result === 1 && address.length == 42) {
         return { valid: true, address };
     } else {
-        const array = new Uint32Array(memoryBuffer, 8192, 42);
-        return { valid: true, address: String.fromCodePoint.apply(null, array) };
+        const array = new Uint8Array(memoryBuffer, 8192, 42);
+        return { valid: true, address: decoder.decode(array) };
     }
 }
 

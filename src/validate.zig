@@ -137,7 +137,7 @@ pub fn validateChecksum(address: []u32) ValidationResult {
         outputU64[j] = upperCaseU64[j] | mask;
     }
 
-    const writeOut: []u32 = @as([*]u32, address.ptr)[0..@as(usize, @intCast(42))];
+    const writeOut: []u8 = @as([*]u8, @ptrCast(address.ptr))[0..@as(usize, @intCast(42))];
     writeOut[0] = '0';
     writeOut[1] = 'x';
     inline for (output, 2..) |v, i| {
