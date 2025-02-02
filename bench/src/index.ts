@@ -1,5 +1,6 @@
 import { validateAddress as currentValidateAddress } from "../../js/"
 import { validateAddress } from "@mradomski/tinyerc55"
+import { utils } from 'ethers'
 
 (async () => {
     const addresses: string[] = [
@@ -109,11 +110,17 @@ import { validateAddress } from "@mradomski/tinyerc55"
 
 	boxplot(() => {
 		summary(() => {
-			bench("current", () => currentValidateAddress("0xf4Ceb9ABaa73C587ec77d0A978210F6A614bED36"));
+			bench("ethers", () => utils.getAddress("0xf4Ceb9ABaa73C587ec77d0A978210F6A614bED36"));
 			bench("release", () => validateAddress("0xf4Ceb9ABaa73C587ec77d0A978210F6A614bED36"));
+			bench("current", () => currentValidateAddress("0xf4Ceb9ABaa73C587ec77d0A978210F6A614bED36"));
 		});
 
 		summary(() => {
+			bench("ethers", () => {
+                for(const address of addresses) {
+                    utils.getAddress(address)
+                }
+            });
 			bench("current", () => {
                 for(const address of addresses) {
                     currentValidateAddress(address)

@@ -13,6 +13,7 @@
     "@mradomski/tinyerc55": "^0.1.1",
     "@types/node": "^22.13.0",
     "esbuild-register": "^3.6.0",
+    "ethers": "^5.7.2",
     "mitata": "^1.0.33",
     "typescript": "^5.7.3"
   }
