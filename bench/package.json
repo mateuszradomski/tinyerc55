@@ -1,0 +1,19 @@
+{
+  "name": "js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "bench": "node -r esbuild-register --expose-gc src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@mradomski/tinyerc55": "^0.1.1",
+    "@types/node": "^22.13.0",
+    "esbuild-register": "^3.6.0",
+    "mitata": "^1.0.33",
+    "typescript": "^5.7.3"
+  }
+}
