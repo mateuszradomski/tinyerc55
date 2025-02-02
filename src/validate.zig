@@ -125,14 +125,19 @@ pub fn validateChecksum(address: []u32) ValidationResult {
     var hashed: [32]u8 = undefined;
     Keccak256.hash(&output, &hashed, .{});
 
-    for (0..20) |j| {
-        const i = j * 2;
+    inline for (0..5) |j| {
+        const i = j * 4;
+        const leftNibbles: u64 =
+            ((@as(u64, hashed[i + 0]) >> 2) | (@as(u64, hashed[i + 1]) << 14)) |
+            ((@as(u64, hashed[i + 2]) << 30) | (@as(u64, hashed[i + 3]) << 46));
 
-        const LUT1: [2]u8 = [2]u8{ output[i], upperCase[i] };
-        const LUT2: [2]u8 = [2]u8{ output[i + 1], upperCase[i + 1] };
+        const rightNibbles: u64 =
+            ((@as(u64, hashed[i + 0]) << 10) | (@as(u64, hashed[i + 1]) << 26)) |
+            ((@as(u64, hashed[i + 2]) << 42) | (@as(u64, hashed[i + 3]) << 58));
 
-        output[i] = LUT1[hashed[j] / 128];
-        output[i + 1] = LUT2[(hashed[j] & 0x0f) / 8];
+        const mask = ((leftNibbles | rightNibbles) & 0x2020202020202020) ^ 0x2020202020202020;
+
+        outputU64[j] = upperCaseU64[j] | mask;
     }
 
     const writeOut: []u32 = @as([*]u32, address.ptr)[0..@as(usize, @intCast(42))];
