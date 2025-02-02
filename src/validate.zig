@@ -57,6 +57,25 @@ const ValidationResult = enum(u2) {
     Computed,
 };
 
+inline fn isLowerHex8(v: u64) u64 {
+    const all_bytes: u64 = 0x0101010101010101;
+    const isGreaterThanF = v + ((0x7F - 'F') * all_bytes);
+    const isGreaterEqualA = v + ((0x80 - 'A') * all_bytes);
+    const isGreaterThan9 = v + ((0x7F - '9') * all_bytes);
+    const isGreaterEqual0 = v + ((0x80 - '0') * all_bytes);
+    const isAlpha = (0x80 * all_bytes) & (isGreaterThanF ^ isGreaterEqualA);
+    const isNumeric = (0x80 * all_bytes) & (isGreaterThan9 ^ isGreaterEqual0);
+    return isAlpha | isNumeric;
+}
+
+inline fn toUpper8(v: u64) u64 {
+    const all_bytes: u64 = 0x0101010101010101;
+    const isGreaterThanZ = v + ((0x7F - 'z') * all_bytes);
+    const isGreaterEqualA = v + ((0x80 - 'a') * all_bytes);
+    const flag = ((0x80 * all_bytes) & (isGreaterThanZ ^ isGreaterEqualA)) >> 2;
+    return v & (~flag);
+}
+
 pub fn validateChecksum(address: []u32) ValidationResult {
     var hexPartSlice = address;
     if (address.len == 42 and address[0] == '0' and address[1] == 'x') {
@@ -70,7 +89,7 @@ pub fn validateChecksum(address: []u32) ValidationResult {
     const hexPart32: [40]u32 = @as(*[40]u32, @ptrCast(@constCast(hexPartSlice.ptr))).*;
 
     var hasUnicode = false;
-    var hexPart: [40]u8 = undefined;
+    var hexPart: [40]u8 align(8) = undefined;
     inline for (hexPart32, 0..) |c, i| {
         hasUnicode = hasUnicode or c > 128;
         hexPart[i] = @truncate(c);
@@ -80,18 +99,23 @@ pub fn validateChecksum(address: []u32) ValidationResult {
         return .Invalid;
     }
 
-    var upperCase: [40]u8 = undefined;
-    var output: [40]u8 = undefined;
-    var isHex = true;
-    for (hexPart, 0..) |c, i| {
-        const v = std.ascii.toUpper(c);
-        isHex = isHex and std.ascii.isHex(v);
+    var upperCase: [40]u8 align(8) = undefined;
+    var output: [40]u8 align(8) = undefined;
 
-        upperCase[i] = v;
-        output[i] = v | 0b00100000;
+    const hexPartU64: *[5]u64 = @ptrCast(&hexPart);
+    var outputU64: *[5]u64 = @ptrCast(&output);
+    var upperCaseU64: *[5]u64 = @ptrCast(&upperCase);
+
+    var isHex: u64 = 0x8080808080808080;
+    inline for (hexPartU64, 0..) |v, i| {
+        const u = toUpper8(v);
+        const l = u | 0x2020202020202020;
+        isHex = isLowerHex8(u) & isHex;
+        outputU64[i] = l;
+        upperCaseU64[i] = u;
     }
 
-    if (!isHex) {
+    if (isHex != 0x8080808080808080) {
         return .Invalid;
     }
 
