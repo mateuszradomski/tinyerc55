@@ -110,25 +110,25 @@ import { utils } from 'ethers'
 
 	boxplot(() => {
 		summary(() => {
-			bench("ethers", () => utils.getAddress("0xf4Ceb9ABaa73C587ec77d0A978210F6A614bED36"));
-			bench("release", () => validateAddress("0xf4Ceb9ABaa73C587ec77d0A978210F6A614bED36"));
-			bench("current", () => currentValidateAddress("0xf4Ceb9ABaa73C587ec77d0A978210F6A614bED36"));
+			bench("single ethers", () => utils.getAddress("0xf4Ceb9ABaa73C587ec77d0A978210F6A614bED36"));
+			bench("single release", () => validateAddress("0xf4Ceb9ABaa73C587ec77d0A978210F6A614bED36"));
+			bench("single current", () => currentValidateAddress("0xf4Ceb9ABaa73C587ec77d0A978210F6A614bED36"));
 		});
 
 		summary(() => {
-			bench("ethers", () => {
+			bench("100 ethers", () => {
                 for(const address of addresses) {
                     utils.getAddress(address)
                 }
             });
-			bench("current", () => {
-                for(const address of addresses) {
-                    currentValidateAddress(address)
-                }
-            });
-			bench("release", () => {
+			bench("100 release", () => {
                 for(const address of addresses) {
                     validateAddress(address)
+                }
+            });
+			bench("100 current", () => {
+                for(const address of addresses) {
+                    currentValidateAddress(address)
                 }
             });
 		});
