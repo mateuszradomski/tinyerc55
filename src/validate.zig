@@ -131,10 +131,7 @@ pub fn validateChecksum(address: []u32) ValidationResult {
             ((@as(u64, hashed[i + 0]) >> 2) | (@as(u64, hashed[i + 1]) << 14)) |
             ((@as(u64, hashed[i + 2]) << 30) | (@as(u64, hashed[i + 3]) << 46));
 
-        const rightNibbles: u64 =
-            ((@as(u64, hashed[i + 0]) << 10) | (@as(u64, hashed[i + 1]) << 26)) |
-            ((@as(u64, hashed[i + 2]) << 42) | (@as(u64, hashed[i + 3]) << 58));
-
+        const rightNibbles: u64 = leftNibbles << 12;
         const mask = ((leftNibbles | rightNibbles) & 0x2020202020202020) ^ 0x2020202020202020;
 
         outputU64[j] = upperCaseU64[j] | mask;
