@@ -10,7 +10,7 @@ function decodeBase64(base64) {
   if (typeof Buffer !== 'undefined') {
     return Buffer.from(base64, 'base64');
   } else {
-    const binStr = atob(base64);
+    const binStr = atob(base64.replace(/-/g, "+").replace(/_/g, "/"));
     const bytes = new Uint8Array(binStr.length);
     for (let i = 0; i < binStr.length; i++) {
       bytes[i] = binStr.charCodeAt(i);
