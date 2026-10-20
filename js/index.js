@@ -35,8 +35,10 @@ function loadWasmModule() {
     // the length. Any non-ASCII character makes it differ from the string
     // length and the wasm side rejects bytes outside of ASCII. Buffer is used
     // when available since it's noticeably faster than TextEncoder/Decoder.
-    // The memory never grows, so the views stay valid.
-    if (typeof Buffer !== 'undefined') {
+    // latin1Slice is checked for since browser polyfills of Buffer (the
+    // `buffer` package) don't have it. The memory never grows, so the views
+    // stay valid.
+    if (typeof Buffer !== 'undefined' && typeof Buffer.prototype.latin1Slice === 'function') {
         const scratch = Buffer.from(memoryBuffer, SCRATCH_OFFSET, SCRATCH_SIZE);
         writeInput = (address) => scratch.write(address, 0, SCRATCH_SIZE, 'utf8');
         readOutput = () => scratch.latin1Slice(0, 42);
